@@ -1,0 +1,97 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "kueue.x-k8s.io/v1beta1",
+      "kind": "Workload",
+      "metadata": {
+        "name": "demo",
+        "namespace": "default",
+        "uid": "demo-uid"
+      },
+      "spec": {
+        "queueName": "ml",
+        "podSets": [
+          {
+            "name": "main",
+            "count": 2,
+            "template": {
+              "spec": {
+                "containers": [
+                  {
+                    "name": "train",
+                    "resources": {
+                      "requests": {
+                        "nvidia.com/gpu": "2"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "type": "Admitted",
+            "status": "False",
+            "reason": "NoReservation"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "kueue.x-k8s.io/v1beta1",
+      "kind": "LocalQueue",
+      "metadata": {
+        "name": "ml",
+        "namespace": "default",
+        "uid": "ml-uid"
+      },
+      "spec": {
+        "clusterQueue": "gpu-pool"
+      }
+    },
+    {
+      "apiVersion": "kueue.x-k8s.io/v1beta1",
+      "kind": "ClusterQueue",
+      "metadata": {
+        "name": "gpu-pool",
+        "uid": "gpu-pool-uid"
+      },
+      "spec": {
+        "resourceGroups": [
+          {
+            "flavors": [
+              {
+                "name": "gpu-flavor",
+                "resources": [
+                  {
+                    "name": "nvidia.com/gpu",
+                    "nominalQuota": "2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "kueue.x-k8s.io/v1beta1",
+      "kind": "ResourceFlavor",
+      "metadata": {
+        "name": "gpu-flavor",
+        "uid": "gpu-flavor-uid"
+      },
+      "spec": {
+        "nodeLabels": {
+          "accelerator": "gpu"
+        }
+      }
+    }
+  ]
+}
